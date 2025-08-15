@@ -100,21 +100,52 @@ const verifyOtp = async (req, res) => {
 };
 
 // Create Profile
+// const createProfile = async (req, res) => {
+//   const { username, about, agreed } = req.body;
+//   const userId = req.user.userId;
+
+//   console.log("User ID:", userId);
+//   console.log("Request Body:", req.body);
+//   console.log("File Info:", req.file);
+
+//   try {
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       return response(res, 404, "User not found");
+//     }
+
+//     const file = req.files?.image?.[0] || req.files?.profilePicture?.[0];
+//     if (file) {
+//       const uploadResult = await cloudinaryConfig.uploadFileToCloudinary(file);
+//       user.profilePicture = uploadResult?.secure_url;
+//     } else if (req.body.profilePicture) {
+//       user.profilePicture = req.body.profilePicture;
+//     }
+
+//     if (username) user.username = username;
+//     if (agreed) user.agreed = agreed;
+//     if (about) user.about = about;
+
+//     await user.save();
+//     return response(res, 200, "Profile created successfully!", user);
+//   } catch (error) {
+//     console.error("Create Profile Error:", error.message, error.stack);
+//     return response(res, 500, "Internal server error");
+//   }
+// };
+
 const createProfile = async (req, res) => {
-  const { username, about, agreed } = req.body;
-  const userId = req.user.userId;
-
-  console.log("User ID:", userId);
-  console.log("Request Body:", req.body);
-  console.log("File Info:", req.file);
-
   try {
-    const user = await User.findById(userId);
-    if (!user) {
-      return response(res, 404, "User not found");
-    }
+    console.log("req.files:", req.files);
+    console.log("req.body:", req.body);
 
-    const file = req.files?.image?.[0] || req.files?.profilePicture?.[0];
+    const { username, about, agreed } = req.body;
+    const userId = req.user.userId;
+
+    const user = await User.findById(userId);
+    if (!user) return response(res, 404, "User not found");
+
+    const file = req.files?.profilePicture?.[0] || req.files?.image?.[0];
     if (file) {
       const uploadResult = await cloudinaryConfig.uploadFileToCloudinary(file);
       user.profilePicture = uploadResult?.secure_url;
@@ -123,14 +154,14 @@ const createProfile = async (req, res) => {
     }
 
     if (username) user.username = username;
-    if (agreed) user.agreed = agreed;
+    if (agreed !== undefined) user.agreed = agreed;
     if (about) user.about = about;
 
     await user.save();
     return response(res, 200, "Profile created successfully!", user);
   } catch (error) {
-    console.error("Create Profile Error:", error.message, error.stack);
-    return response(res, 500, "Internal server error");
+    console.error("Create Profile Error:", error);
+    return response(res, 500, error.message || "Internal server error");
   }
 };
 
